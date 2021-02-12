@@ -14,7 +14,7 @@ import java.util.Collection;
 public class ComptesOpsController {
     CompteOpsService compteOpsService;
 
-    @PostMapping("comptes")
+    @PostMapping("comptes/add")
     Compte addCompte(@RequestBody() Compte comptePayload){
         return compteOpsService.addCompte(comptePayload);
     }
