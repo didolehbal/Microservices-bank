@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -30,8 +31,8 @@ public class Compte {
     @Enumerated(EnumType.STRING)
     private EtatCompte etat;
 
-    @OneToMany
-    Collection<Operation> operations;
+    @OneToMany(cascade = {CascadeType.ALL})
+    Collection<Operation> operations = new ArrayList<>();
 
     Long clientId;
 

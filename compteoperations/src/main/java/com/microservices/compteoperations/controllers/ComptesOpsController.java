@@ -3,20 +3,19 @@ package com.microservices.compteoperations.controllers;
 import com.microservices.compteoperations.entities.Compte;
 import com.microservices.compteoperations.entities.Operation;
 import com.microservices.compteoperations.services.CompteOpsService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 
 @RestController
+@AllArgsConstructor
 public class ComptesOpsController {
     CompteOpsService compteOpsService;
-    ComptesOpsController(CompteOpsService compteOpsService){
-    }
 
     @PostMapping("comptes")
     Compte addCompte(@RequestBody() Compte comptePayload){
-        System.out.println(comptePayload);
         return compteOpsService.addCompte(comptePayload);
     }
 
@@ -48,6 +47,7 @@ public class ComptesOpsController {
     @GetMapping("/comptes/{id}/clients")
     Compte compteclient(@PathVariable("id") Long compteId
     ){
+        System.out.println(compteId);
        return compteOpsService.getCompteetClient(compteId);
     }
 

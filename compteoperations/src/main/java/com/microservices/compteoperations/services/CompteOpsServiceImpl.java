@@ -1,14 +1,13 @@
 package com.microservices.compteoperations.services;
 
-import com.microservices.compteoperations.entities.Compte;
-import com.microservices.compteoperations.entities.EtatCompte;
-import com.microservices.compteoperations.entities.Operation;
-import com.microservices.compteoperations.entities.TypeCompte;
+import com.microservices.compteoperations.entities.*;
 import com.microservices.compteoperations.feign.ClientsRestClient;
 import com.microservices.compteoperations.respositories.ComptesRepository;
 import com.microservices.compteoperations.respositories.OperationsRepository;
 import com.microservices.compteoperations.services.CompteOpsService;
+import lombok.AllArgsConstructor;
 import org.hibernate.annotations.NotFoundAction;
+import org.springframework.boot.actuate.endpoint.OperationType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -17,16 +16,14 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-@Transactional
 @Service
+@Transactional
+@AllArgsConstructor
 public class CompteOpsServiceImpl implements CompteOpsService {
     ComptesRepository comptesRepository;
     OperationsRepository operationsRepository;
     ClientsRestClient clientsRestClient;
-    CompteOpsServiceImpl(ComptesRepository comptesRepository,
-                         OperationsRepository operationsRepository,
-                         ClientsRestClient clientsRestClient){
-    }
+
     private Compte findCompteByIdOrFail(Long compteId) throws RuntimeException{
         Optional<Compte> optionalCompte = comptesRepository.findById(compteId);
         if(!optionalCompte.isPresent())
@@ -43,6 +40,13 @@ public class CompteOpsServiceImpl implements CompteOpsService {
     public Compte verseMontantCompte(Long compteId, double montant) {
         Compte compte = findCompteByIdOrFail(compteId);
         compte.setSolde(compte.getSolde() + montant);
+
+        Operation operation = new Operation();
+        operation.setMontant(montant);
+        operation.setType(TypeOperation.CREDIT);
+        operation.setCompte(compte);
+
+        compte.getOperations().add(operation);
         comptesRepository.save(compte);
         return compte;
     }
@@ -53,6 +57,11 @@ public class CompteOpsServiceImpl implements CompteOpsService {
         if(compte.getSolde() < montant )
             throw new RuntimeException("Solde Insuffisant !");
         compte.setSolde(compte.getSolde() - montant);
+        Operation operation = new Operation();
+        operation.setMontant(montant);
+        operation.setType(TypeOperation.DEBIT);
+
+        compte.getOperations().add(operation);
         comptesRepository.save(compte);
         return compte;
     }
@@ -77,7 +86,8 @@ public class CompteOpsServiceImpl implements CompteOpsService {
     @Override
     public Compte getCompteetClient(Long compteId) {
         Compte compte = findCompteByIdOrFail(compteId);
-        compte.setClient(clientsRestClient.findClientById(compte.getClientId()));
+        if(compte.getClientId()!=null)
+            compte.setClient(clientsRestClient.findClientById(compte.getClientId()));
         return compte;
     }
 
